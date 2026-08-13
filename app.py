@@ -369,10 +369,10 @@ if analyze_clicked:
                 with st.expander(req):
                     st.write(explanation)
 
-        report_md = report.build_report(ats_results, match_results, explanations)
+        pdf_bytes = report.build_pdf(ats_results, match_results, explanations)
         st.download_button(
-            "Download full report (.md)",
-            data=report_md,
-            file_name="resume_match_report.md",
-            mime="text/markdown",
+            "Download full report (.pdf)",
+            data=pdf_bytes,
+            file_name="resume_match_report.pdf",
+            mime="application/pdf",
         )
