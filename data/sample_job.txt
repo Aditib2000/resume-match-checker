@@ -1,0 +1,14 @@
+Data Analyst - Marketing Analytics
+
+We are looking for a Data Analyst to join our marketing analytics team.
+
+Requirements:
+- 3+ years of experience working with SQL and relational databases
+- Proficiency in Python for data analysis, including pandas and numpy
+- Experience building dashboards in Tableau or Power BI
+- Strong stakeholder management skills; able to communicate insights to non-technical audiences
+- Experience with A/B testing and experimental design
+- Familiarity with cloud data warehouses such as Snowflake or BigQuery
+- Bachelor's degree in a quantitative field (Statistics, Math, Economics, CS, or related)
+- Experience with marketing attribution modeling is a plus
+- Excellent written and verbal communication skills

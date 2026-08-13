@@ -1,0 +1,19 @@
+Riya Bhandari
+riya.bhandari@email.com | (555) 123-4567
+
+Summary
+Data-focused analyst with 3 years of experience turning raw data into decisions.
+
+Experience
+- Wrote complex SQL queries daily to pull and join data across five relational databases for weekly reporting
+- Used Python (pandas, numpy) to clean and analyze customer datasets for the growth team
+- Built and maintained 10+ interactive dashboards in Tableau used by leadership weekly
+* Partnered with product and marketing leads to translate findings into clear, non-technical recommendations
+* Led cross-functional meetings with stakeholders across three departments to align on reporting priorities
+- Presented quarterly findings to senior leadership in written reports and live presentations
+
+Education
+Bachelor of Science in Statistics, State University, 2021
+
+Skills
+SQL, Python, Tableau, Excel, Git
