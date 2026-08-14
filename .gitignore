@@ -3,3 +3,4 @@ __pycache__/
 *.pyc
 output/
 .streamlit/secrets.toml
+.claude/settings.local.json
