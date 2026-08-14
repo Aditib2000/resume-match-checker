@@ -3,6 +3,8 @@
 Run with: streamlit run app.py
 """
 
+from pathlib import Path
+
 import streamlit as st
 
 from src import ats_check, analyzer, matcher, report
@@ -56,9 +58,95 @@ CSS = """
 .app-subheader {
     text-align: center;
     color: var(--muted);
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
     font-size: 1.02rem;
 }
+
+/* Feature chips */
+.feature-row {
+    display: flex;
+    justify-content: center;
+    gap: 0.7rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.6rem;
+}
+.feature-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    background: white;
+    border-radius: 999px;
+    padding: 0.5rem 1.1rem;
+    box-shadow: 0 4px 14px -7px rgba(31,35,51,0.25);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--ink);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.feature-chip:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px -7px rgba(31,35,51,0.3);
+}
+
+/* Fade-in entrance animation */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.fade-in { animation: fadeInUp 0.55s ease both; }
+.fade-in-delay-1 { animation: fadeInUp 0.55s ease both; animation-delay: 0.08s; }
+.fade-in-delay-2 { animation: fadeInUp 0.55s ease both; animation-delay: 0.16s; }
+
+/* Circular score gauge */
+.gauge-wrap { text-align: center; }
+.gauge {
+    --size: 176px;
+    width: var(--size);
+    height: var(--size);
+    border-radius: 50%;
+    margin: 0 auto 0.9rem auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: conic-gradient(var(--gcolor) calc(var(--pct) * 1%), #e9e9f4 0);
+    box-shadow: 0 14px 30px -12px rgba(31,35,51,0.35);
+    transition: transform 0.15s ease;
+}
+.gauge:hover { transform: scale(1.02); }
+.gauge-inner {
+    width: calc(var(--size) - 26px);
+    height: calc(var(--size) - 26px);
+    border-radius: 50%;
+    background: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.gauge-icon { font-size: 1.3rem; margin-bottom: -0.1rem; }
+.gauge-value { font-size: 2.5rem; font-weight: 800; color: var(--ink); line-height: 1.1; }
+.gauge-outof { font-size: 0.7rem; color: var(--muted); }
+.gauge-title {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--ink);
+}
+
+/* Footer */
+.app-footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.82rem;
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e5e7eb;
+}
+.app-footer a {
+    color: var(--brand-1);
+    font-weight: 600;
+    text-decoration: none;
+}
+.app-footer a:hover { text-decoration: underline; }
 
 .section-title {
     font-weight: 700;
@@ -67,43 +155,6 @@ CSS = """
     margin: 1.6rem 0 0.8rem 0;
     padding-left: 0.7rem;
     border-left: 5px solid var(--brand-1);
-}
-
-/* Score cards */
-.score-card {
-    border-radius: 18px;
-    padding: 1.8rem 1rem;
-    text-align: center;
-    color: white;
-    box-shadow: 0 10px 25px -8px rgba(0,0,0,0.25);
-    position: relative;
-    overflow: hidden;
-}
-.score-card::after {
-    content: "";
-    position: absolute;
-    top: -40%; right: -20%;
-    width: 140px; height: 140px;
-    background: rgba(255,255,255,0.14);
-    border-radius: 50%;
-}
-.score-icon { font-size: 1.6rem; margin-bottom: 0.2rem; }
-.score-label {
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    opacity: 0.95;
-    font-weight: 600;
-}
-.score-value {
-    font-size: 3.2rem;
-    font-weight: 800;
-    line-height: 1.15;
-    text-shadow: 0 2px 10px rgba(0,0,0,0.15);
-}
-.score-out-of {
-    font-size: 0.78rem;
-    opacity: 0.9;
 }
 
 /* Badges */
@@ -208,23 +259,37 @@ def load_embedding_model():
     return matcher.get_model()
 
 
+DATA_DIR = Path(__file__).resolve().parent / "data"
+
+
+@st.cache_data
+def load_sample_data() -> tuple[str, str]:
+    job = (DATA_DIR / "sample_job.txt").read_text(encoding="utf-8")
+    resume = (DATA_DIR / "sample_resume.txt").read_text(encoding="utf-8")
+    return job, resume
+
+
 def score_tier(score: int) -> tuple[str, str]:
-    """Return (gradient_css, icon) for a score."""
+    """Return (solid color, icon) for a score."""
     if score >= 75:
-        return "linear-gradient(135deg, #10b981, #34d399)", "\U0001F7E2"
+        return "#10b981", "\U0001F7E2"
     if score >= 50:
-        return "linear-gradient(135deg, #f59e0b, #fbbf24)", "\U0001F7E1"
-    return "linear-gradient(135deg, #ef4444, #f87171)", "\U0001F534"
+        return "#f59e0b", "\U0001F7E1"
+    return "#ef4444", "\U0001F534"
 
 
-def score_card_html(label: str, score: int) -> str:
-    gradient, icon = score_tier(score)
+def gauge_html(label: str, score: int) -> str:
+    color, icon = score_tier(score)
     return f"""
-    <div class="score-card" style="background:{gradient};">
-        <div class="score-icon">{icon}</div>
-        <div class="score-label">{label}</div>
-        <div class="score-value">{score}</div>
-        <div class="score-out-of">out of 100</div>
+    <div class="gauge-wrap fade-in">
+        <div class="gauge" style="--pct:{score}; --gcolor:{color};">
+            <div class="gauge-inner">
+                <div class="gauge-icon">{icon}</div>
+                <div class="gauge-value">{score}</div>
+                <div class="gauge-outof">/ 100</div>
+            </div>
+        </div>
+        <div class="gauge-title">{label}</div>
     </div>
     """
 
@@ -264,13 +329,17 @@ def get_text(label: str, key_prefix: str) -> str:
 def ats_table_html(ats_results: dict) -> str:
     rows = []
     for c in ats_results["checks"]:
+        color = "#10b981" if c.passed else "#ef4444"
         badge = (
             '<span class="badge badge-pass">&#10003; PASS</span>' if c.passed
             else '<span class="badge badge-fail">&#10007; FAIL</span>'
         )
-        rows.append(f"<tr><td>{c.name}</td><td>{badge}</td><td>{c.message}</td></tr>")
+        rows.append(
+            f'<tr><td style="border-left:4px solid {color}; padding-left:0.7rem;">{c.name}</td>'
+            f"<td>{badge}</td><td>{c.message}</td></tr>"
+        )
     return f"""
-    <div class="table-card">
+    <div class="table-card fade-in-delay-1">
     <table class="results-table">
         <thead><tr><th>Check</th><th>Result</th><th>Detail</th></tr></thead>
         <tbody>{''.join(rows)}</tbody>
@@ -282,15 +351,16 @@ def ats_table_html(ats_results: dict) -> str:
 def match_table_html(match_results: list) -> str:
     badge_class = {"strong": "badge-strong", "partial": "badge-partial", "missing": "badge-missing"}
     badge_icon = {"strong": "&#10003;", "partial": "&#8776;", "missing": "&#10007;"}
+    row_color = {"strong": "#10b981", "partial": "#f59e0b", "missing": "#ef4444"}
     rows = []
     for r in sorted(match_results, key=lambda r: r.score):
         badge = f'<span class="badge {badge_class[r.status]}">{badge_icon[r.status]} {r.status.upper()}</span>'
         rows.append(
-            f"<tr><td>{r.requirement}</td><td>{r.best_bullet}</td>"
-            f"<td>{r.score:.2f}</td><td>{badge}</td></tr>"
+            f'<tr><td style="border-left:4px solid {row_color[r.status]}; padding-left:0.7rem;">{r.requirement}</td>'
+            f"<td>{r.best_bullet}</td><td>{r.score:.2f}</td><td>{badge}</td></tr>"
         )
     return f"""
-    <div class="table-card">
+    <div class="table-card fade-in-delay-2">
     <table class="results-table">
         <thead><tr><th>Job Requirement</th><th>Best Matching Resume Line</th><th>Score</th><th>Status</th></tr></thead>
         <tbody>{''.join(rows)}</tbody>
@@ -301,9 +371,28 @@ def match_table_html(match_results: list) -> str:
 
 st.markdown('<h1 class="app-header">Resume Match Checker</h1>', unsafe_allow_html=True)
 st.markdown(
-    '<p class="app-subheader">Check ATS compatibility and how well your resume matches a job description.</p>',
+    '<p class="app-subheader">Check ATS compatibility and how well your resume matches a job description '
+    '&mdash; in seconds, for free.</p>',
     unsafe_allow_html=True,
 )
+st.markdown(
+    """
+    <div class="feature-row">
+        <div class="feature-chip">\U0001F3AF Smart semantic matching</div>
+        <div class="feature-chip">\U0001F6E1️ ATS compatibility check</div>
+        <div class="feature-chip">⚡ Instant &amp; free</div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+_, sample_col, _ = st.columns([1, 1.4, 1])
+with sample_col:
+    if st.button("✨ Try it with sample data", use_container_width=True):
+        sample_job, sample_resume = load_sample_data()
+        st.session_state["job_paste"] = sample_job
+        st.session_state["resume_paste"] = sample_resume
+        st.rerun()
 
 col_job, col_resume = st.columns(2)
 with col_job:
@@ -340,10 +429,10 @@ if analyze_clicked:
 
         score_col1, score_col2 = st.columns(2)
         with score_col1:
-            st.markdown(score_card_html("ATS Compatibility", ats_results["score"]), unsafe_allow_html=True)
+            st.markdown(gauge_html("ATS Compatibility", ats_results["score"]), unsafe_allow_html=True)
         with score_col2:
             st.markdown(
-                score_card_html("Job Match", matcher.overall_match_score(match_results)),
+                gauge_html("Job Match", matcher.overall_match_score(match_results)),
                 unsafe_allow_html=True,
             )
 
@@ -370,3 +459,9 @@ if analyze_clicked:
             file_name="resume_match_report.pdf",
             mime="application/pdf",
         )
+
+st.markdown(
+    '<div class="app-footer">Built with local embeddings + Streamlit &middot; '
+    '<a href="https://github.com/Aditib2000/resume-match-checker" target="_blank">View source on GitHub</a></div>',
+    unsafe_allow_html=True,
+)
