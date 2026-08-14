@@ -316,12 +316,6 @@ with col_resume:
 use_claude = False
 if analyzer.is_available():
     use_claude = st.checkbox("Include Claude gap analysis & rewrite suggestions", value=True)
-else:
-    st.info(
-        "Set the `ANTHROPIC_API_KEY` environment variable to also get Claude's gap explanations "
-        "and rewrite suggestions. ATS + match scoring below works without it.",
-        icon="ℹ️",
-    )
 
 analyze_clicked = st.button("Analyze", type="primary", use_container_width=True)
 
