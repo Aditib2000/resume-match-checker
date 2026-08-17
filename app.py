@@ -249,6 +249,10 @@ button[kind="primary"]:hover {
     border: 1px solid #eef0f6 !important;
     box-shadow: 0 4px 14px -8px rgba(31,35,51,0.15);
 }
+[data-testid="stCheckbox"] [data-testid="stMarkdownContainer"] p,
+[data-testid="stCheckbox"] label {
+    color: var(--ink) !important;
+}
 </style>
 """
 st.markdown(CSS, unsafe_allow_html=True)
